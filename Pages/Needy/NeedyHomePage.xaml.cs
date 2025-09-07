@@ -1,49 +1,73 @@
-using Foodshare.Services;
+using System.Collections.ObjectModel;
 using Foodshare.Models;
-using Microsoft.Maui.ApplicationModel.Communication;
+using Foodshare.Services;
 
-namespace Foodshare.Pages.Needy;
-
-public partial class NeedyHomePage : TabbedPage
+namespace Foodshare.Pages.Needy
 {
-    readonly DbService _db; readonly AuthService _auth;
-    public NeedyHomePage(){ InitializeComponent(); _db=Application.Current.Services.GetService<DbService>()!; _auth=Application.Current.Services.GetService<AuthService>()!; }
-
-    protected override async void OnAppearing()
+    public partial class NeedyHomePage : ContentPage
     {
-        await LoadCatalog();
-        await LoadNpo();
-    }
+        private readonly ObservableCollection<Row> _items = new();
 
-    async Task LoadCatalog()
-    {
-        var list = await _db.Conn.Table<FoodItem>().Where(f=>f.IsAvailable).ToListAsync();
-        CatalogList.ItemsSource = list.Select(f=> new { f.Id, f.Title, f.Description, Kg=$"{f.Kg:0.##}", f.Address });
-    }
-
-    async Task LoadNpo()
-    {
-        var npos = await _db.Conn.Table<User>().Where(u=>u.Role==UserRole.NGO).ToListAsync();
-        NpoList.ItemsSource = npos.Select(n=> new Label
+        private class Row
         {
-            Text = $"{n.OrgName} — {n.Phone}\n{n.Address}",
-            GestureRecognizers = { new TapGestureRecognizer{ Command = new Command(async ()=> await Launcher.OpenAsync($"tel:{n.Phone}")) } }
-        });
-    }
+            public string Id { get; set; } = "";
+            public string Title { get; set; } = "";
+            public string Description { get; set; } = "";
+            public double Kg { get; set; }
+            public Command<string> BookCmd { get; set; } = null!;
+        }
 
-    async void Map_Clicked(object s, EventArgs e) => await Navigation.PushAsync(new Pages.Common.FoodMapPage());
-    async void Bookings_Clicked(object s, EventArgs e) => await Navigation.PushAsync(new NeedyBookingsPage());
+        public NeedyHomePage()
+        {
+            InitializeComponent();
+            // кнопки
+            var mapBtn   = this.FindByName<Button>("MapBtn");
+            var bookBtn  = this.FindByName<Button>("BookingsBtn");
+            mapBtn.Clicked += async (_, __) => await Navigation.PushAsync(new Foodshare.Pages.Common.FoodMapPage());
+            bookBtn.Clicked += async (_, __) => await Navigation.PushAsync(new NeedyBookingsPage());
 
-    async void Reserve_Clicked(object s, EventArgs e)
-    {
-        var id = (int)((Button)s).CommandParameter;
-        var food = await _db.Conn.FindAsync<FoodItem>(id);
-        if (food==null || !food.IsAvailable){ await DisplayAlert("Уведомление","Недоступно","OK"); return; }
-        food.IsAvailable=false;
-        await _db.Conn.UpdateAsync(food);
-        var b = new Booking{ FoodItemId=id, BookerUserId=AuthService.CurrentUser!.Id, Status=BookingStatus.Reserved };
-        await _db.Conn.InsertAsync(b);
-        await DisplayAlert("Готово","Забронировано. Волонтёры увидят заказ для доставки.","OK");
-        await LoadCatalog();
+            // список
+            var list = this.FindByName<CollectionView>("FoodList");
+            list.BindingContext = this;
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await LoadAsync();
+        }
+
+        private async Task LoadAsync()
+        {
+            _items.Clear();
+            var foods = await DbService.I.GetAvailableFoodAsync();
+            foreach (var f in foods)
+            {
+                _items.Add(new Row
+                {
+                    Id = f.Id,
+                    Title = f.Title,
+                    Description = f.Description,
+                    Kg = f.Kg,
+                    BookCmd = new Command<string>(async id => await BookAsync(id))
+                });
+            }
+            var list = this.FindByName<CollectionView>("FoodList");
+            list.ItemsSource = _items;
+        }
+
+        private async Task BookAsync(string foodId)
+        {
+            var me = await AuthService.I.GetCurrentAsync();
+            if (me == null) return;
+
+            var kgStr = await DisplayPromptAsync("Бронь", "Количество кг", "OK", "Отмена", keyboard: Keyboard.Numeric);
+            if (!double.TryParse(kgStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var kg))
+                kg = 0;
+
+            await DbService.I.ReserveFoodAsync(foodId, me.Id, createdByNgo: false, kg: kg);
+            await DisplayAlert("Готово", "Еда забронирована", "OK");
+            await LoadAsync();
+        }
     }
 }

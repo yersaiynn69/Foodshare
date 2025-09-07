@@ -2,8 +2,6 @@
 <Shell
     x:Class="Foodshare.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:auth="clr-namespace:Foodshare.Pages.Auth"
-    Shell.NavBarIsVisible="False">
-    <ShellContent Route="LoginPage" ContentTemplate="{DataTemplate auth:LoginPage}" />
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <!-- Таббар создаём в коде -->
 </Shell>

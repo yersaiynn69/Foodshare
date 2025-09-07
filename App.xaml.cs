@@ -1,15 +1,21 @@
-using Foodshare.Pages.Auth;
 using Foodshare.Services;
 
-namespace Foodshare;
-
-public partial class App : Application
+namespace Foodshare
 {
-    public static string CurrentCity = "Атырау";
-    public App(LocalizationService loc)
+    public partial class App : Application
     {
-        InitializeComponent();
-        loc.Init("ru");
-        MainPage = new AppShell();
+        public App()
+        {
+            InitializeComponent();
+            MainPage = new AppShell();
+        }
+
+        protected override async void OnStart()
+        {
+            base.OnStart();
+            var dbPath = Path.Combine(FileSystem.AppDataDirectory, "foodshare.db3");
+            await DbService.I.InitAsync(dbPath);
+            await LocalizationService.I.InitAsync();
+        }
     }
 }
