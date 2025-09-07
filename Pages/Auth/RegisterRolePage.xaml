@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             x:Class="Foodshare.Pages.Auth.RegisterRolePage"
+             Title="{x:Static local:Texts.RoleSelect}">
+    <VerticalStackLayout Padding="24" Spacing="12">
+        <Button Text="{x:Static local:Texts.RoleNeedy}" Clicked="Needy_Clicked"/>
+        <Button Text="{x:Static local:Texts.RoleRestaurant}" Clicked="Rest_Clicked"/>
+        <Button Text="{x:Static local:Texts.RoleNgo}" Clicked="Ngo_Clicked"/>
+        <Button Text="{x:Static local:Texts.RoleVolunteer}" Clicked="Vol_Clicked"/>
+    </VerticalStackLayout>
+</ContentPage>

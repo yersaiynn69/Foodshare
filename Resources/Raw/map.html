@@ -1,0 +1,28 @@
+<!DOCTYPE html><html><head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>html,body,#map{height:100%;margin:0;padding:0} .leaflet-popup-content{font-size:14px}</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+</head>
+<body>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([47.0945, 51.9234], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  const markers = [];
+
+  function clearMarkers(){ markers.forEach(m=>map.removeLayer(m)); markers.length=0; }
+  function updateMarkers(json){
+    clearMarkers();
+    const data = JSON.parse(json);
+    if(data.center){ map.setView([data.center.lat, data.center.lng], 12); }
+    data.items.forEach(i=>{
+      const m = L.marker([i.lat, i.lng]).addTo(map);
+      m.bindPopup(`<b>${i.title}</b><br>${i.desc}<br><small>${i.address}</small>`);
+      markers.push(m);
+    });
+  }
+
+  window.updateMarkers = updateMarkers;
+</script>
+</body></html>

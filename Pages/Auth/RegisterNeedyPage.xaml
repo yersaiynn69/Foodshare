@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             x:Class="Foodshare.Pages.Auth.RegisterNeedyPage"
+             Title="Регистрация получателя">
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="10">
+            <Entry x:Name="FullName" Placeholder="ФИО"/>
+            <Entry x:Name="Phone" Placeholder="Телефон"/>
+            <Entry x:Name="Email" Placeholder="Email" Keyboard="Email"/>
+            <Entry x:Name="Password" Placeholder="Пароль" IsPassword="True"/>
+            <Entry x:Name="Address" Placeholder="Адрес проживания"/>
+            <Button Text="Создать аккаунт" Clicked="Create_Clicked"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

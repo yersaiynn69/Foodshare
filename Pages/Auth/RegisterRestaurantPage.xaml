@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             x:Class="Foodshare.Pages.Auth.RegisterRestaurantPage"
+             Title="Регистрация ресторана">
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="10">
+            <Entry x:Name="OrgName" Placeholder="Название ресторана"/>
+            <Entry x:Name="Bin" Placeholder="БИН"/>
+            <Entry x:Name="FullName" Placeholder="Контактное лицо"/>
+            <Entry x:Name="Phone" Placeholder="Телефон"/>
+            <Entry x:Name="Email" Placeholder="Email" Keyboard="Email"/>
+            <Entry x:Name="Password" Placeholder="Пароль" IsPassword="True"/>
+            <Entry x:Name="Address" Placeholder="Адрес филиала (реальный)"/>
+            <Button Text="Создать аккаунт" Clicked="Create_Clicked"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

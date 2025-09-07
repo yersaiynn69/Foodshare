@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            x:Class="Foodshare.Pages.Needy.NeedyHomePage"
+            BarBackgroundColor="{StaticResource Primary}" BarTextColor="White">
+    <ContentPage Title="{x:Static local:Texts.Catalog}" IconImageSource="icon_catalog.png">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="12">
+                <Label Text="{x:Static local:Texts.Needy_HelpNeeded}" FontSize="22" />
+                <Button Text="{x:Static local:Texts.FindFoodNearby}" Clicked="Map_Clicked"/>
+                <Button Text="{x:Static local:Texts.MyBookings}" Clicked="Bookings_Clicked"/>
+                <CollectionView x:Name="CatalogList">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Frame Padding="12" Margin="0,8" BorderColor="#ddd" CornerRadius="12">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Title}" FontAttributes="Bold"/>
+                                    <Label Text="{Binding Description}" FontSize="12"/>
+                                    <HorizontalStackLayout>
+                                        <Label Text="{Binding Kg}"/>
+                                        <Label Text=" кг · "/>
+                                        <Label Text="{Binding Address}" />
+                                    </HorizontalStackLayout>
+                                    <Button Text="Забронировать" CommandParameter="{Binding Id}" Clicked="Reserve_Clicked"/>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage>
+
+    <ContentPage Title="{x:Static local:Texts.Map}" IconImageSource="icon_map.png">
+        <pages:FoodMapPage xmlns:pages="clr-namespace:Foodshare.Pages.Common"/>
+    </ContentPage>
+
+    <ContentPage Title="{x:Static local:Texts.NpoList}" IconImageSource="icon_npo.png">
+        <ScrollView>
+            <VerticalStackLayout Padding="12" Spacing="8">
+                <CollectionView x:Name="NpoList"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </ContentPage>
+
+    <ContentPage Title="{x:Static local:Texts.Ratings}" IconImageSource="icon_star.png">
+        <pages:RatingsPage xmlns:pages="clr-namespace:Foodshare.Pages.Common"/>
+    </ContentPage>
+
+    <ContentPage Title="{x:Static local:Texts.Profile}" IconImageSource="icon_profile.png">
+        <pages:NeedyProfilePage xmlns:pages="clr-namespace:Foodshare.Pages.Needy"/>
+    </ContentPage>
+</TabbedPage>

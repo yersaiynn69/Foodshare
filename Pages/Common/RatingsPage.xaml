@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             x:Class="Foodshare.Pages.Common.RatingsPage"
+             Title="{x:Static local:Texts.Ratings}">
+    <VerticalStackLayout Padding="12" Spacing="8">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+            <Label Text="Рестораны" />
+            <Label />
+            <Button Text="Волонтёры" Clicked="Vol_Clicked"/>
+            <Button Text="НПО" Clicked="Ngo_Clicked"/>
+        </Grid>
+        <CollectionView x:Name="List">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="12" Margin="0,6" BorderColor="#ddd" CornerRadius="12">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Title}" FontAttributes="Bold"/>
+                            <Label Text="{Binding Subtitle}" FontSize="12"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>

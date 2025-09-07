@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             x:Class="Foodshare.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <Color x:Key="Primary">#2D6A4F</Color>
+            <Color x:Key="Secondary">#1B4332</Color>
+            <Color x:Key="Accent">#95D5B2</Color>
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="Black"/>
+                <Setter Property="FontFamily" Value="InterRegular"/>
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="BackgroundColor" Value="{StaticResource Primary}"/>
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="FontFamily" Value="InterSemiBold"/>
+                <Setter Property="Padding" Value="14,12"/>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

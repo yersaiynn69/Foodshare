@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            x:Class="Foodshare.Pages.Volunteer.VolunteerOrdersPage"
+            BarBackgroundColor="{StaticResource Primary}" BarTextColor="White">
+    <ContentPage Title="Заказы">
+        <CollectionView x:Name="List" Padding="12">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Frame Padding="12" Margin="0,8" BorderColor="#ddd" CornerRadius="12">
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Title}" FontAttributes="Bold"/>
+                            <Label Text="{Binding Sub}" FontSize="12"/>
+                            <Button Text="Откликнуться" CommandParameter="{Binding BookingId}" Clicked="Accept_Clicked"/>
+                        </VerticalStackLayout>
+                    </Frame>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </ContentPage>
+
+    <ContentPage Title="{x:Static local:Texts.Ratings}">
+        <pages:RatingsPage xmlns:pages="clr-namespace:Foodshare.Pages.Common"/>
+    </ContentPage>
+
+    <ContentPage Title="{x:Static local:Texts.Profile}">
+        <pages:VolunteerProfilePage xmlns:pages="clr-namespace:Foodshare.Pages.Volunteer"/>
+    </ContentPage>
+</TabbedPage>

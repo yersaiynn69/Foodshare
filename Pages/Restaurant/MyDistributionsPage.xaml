@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             x:Class="Foodshare.Pages.Restaurant.MyDistributionsPage"
+             Title="История раздач">
+    <CollectionView x:Name="List" Padding="12"/>
+</ContentPage>

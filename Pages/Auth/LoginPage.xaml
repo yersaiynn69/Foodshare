@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             x:Class="Foodshare.Pages.Auth.LoginPage"
+             BackgroundColor="#F6FFF8">
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="18">
+            <Image Source="dotnet_bot.png" HeightRequest="120" HorizontalOptions="Center"/>
+            <Label Text="{x:Static local:Texts.AppTitle}" FontSize="28" HorizontalOptions="Center" />
+            <Entry x:Name="EmailEntry" Placeholder="{x:Static local:Texts.Email}" Keyboard="Email"/>
+            <Entry x:Name="PasswordEntry" Placeholder="{x:Static local:Texts.Password}" IsPassword="True"/>
+            <Picker x:Name="CityPicker" Title="{x:Static local:Texts.City}">
+                <Picker.Items>
+                    <x:String>Атырау</x:String>
+                </Picker.Items>
+                <Picker.SelectedIndex>0</Picker.SelectedIndex>
+            </Picker>
+
+            <Button Text="{x:Static local:Texts.Login}" Clicked="Login_Clicked"/>
+            <HorizontalStackLayout HorizontalOptions="Center">
+                <Label Text="{x:Static local:Texts.NoAccount}" />
+                <Button Text="{x:Static local:Texts.Register}" Padding="6,0" BackgroundColor="Transparent" TextColor="{StaticResource Secondary}" Clicked="Register_Clicked"/>
+            </HorizontalStackLayout>
+            <Button Text="{x:Static local:Texts.ForgotPassword}" BackgroundColor="Transparent" TextColor="{StaticResource Secondary}" Clicked="Forgot_Clicked"/>
+            <Button Text="{x:Static local:Texts.Language}: RU/KZ" BackgroundColor="Transparent" TextColor="{StaticResource Secondary}" Clicked="Lang_Clicked"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

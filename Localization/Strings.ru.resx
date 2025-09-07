@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="AppTitle" xml:space="preserve"><value>Foodshare</value></data>
+  <data name="Login" xml:space="preserve"><value>Войти</value></data>
+  <data name="NoAccount" xml:space="preserve"><value>Нет аккаунта?</value></data>
+  <data name="Register" xml:space="preserve"><value>Зарегистрироваться</value></data>
+  <data name="ForgotPassword" xml:space="preserve"><value>Забыли пароль</value></data>
+  <data name="Language" xml:space="preserve"><value>Язык</value></data>
+  <data name="City" xml:space="preserve"><value>Город</value></data>
+  <data name="Atyrau" xml:space="preserve"><value>Атырау</value></data>
+  <data name="Email" xml:space="preserve"><value>Email</value></data>
+  <data name="Password" xml:space="preserve"><value>Пароль</value></data>
+  <data name="RoleSelect" xml:space="preserve"><value>Кто вы?</value></data>
+  <data name="RoleNeedy" xml:space="preserve"><value>Получатель помощи</value></data>
+  <data name="RoleRestaurant" xml:space="preserve"><value>Ресторан</value></data>
+  <data name="RoleNgo" xml:space="preserve"><value>НПО</value></data>
+  <data name="RoleVolunteer" xml:space="preserve"><value>Волонтёр</value></data>
+
+  <data name="Needy_HelpNeeded" xml:space="preserve"><value>Нужна помощь?</value></data>
+  <data name="FindFoodNearby" xml:space="preserve"><value>Найти еду поблизости</value></data>
+  <data name="MyBookings" xml:space="preserve"><value>Мои бронирования</value></data>
+  <data name="Catalog" xml:space="preserve"><value>Каталог</value></data>
+  <data name="Map" xml:space="preserve"><value>Карта</value></data>
+  <data name="NpoList" xml:space="preserve"><value>Список НПО</value></data>
+  <data name="Profile" xml:space="preserve"><value>Профиль</value></data>
+  <data name="Ratings" xml:space="preserve"><value>Рейтинг</value></data>
+
+  <data name="Ngo_HelpQuestion" xml:space="preserve"><value>Есть кому помочь?</value></data>
+
+  <data name="Restaurant_Home" xml:space="preserve"><value>Домой</value></data>
+  <data name="AddFood" xml:space="preserve"><value>Добавить еду</value></data>
+  <data name="MyDistributions" xml:space="preserve"><value>Мои раздачи</value></data>
+  <data name="ReservedOrders" xml:space="preserve"><value>Забронированные</value></data>
+
+  <data name="Volunteer_Assignments" xml:space="preserve"><value>Заказы для доставки</value></data>
+</root>
