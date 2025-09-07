@@ -1,29 +1,33 @@
 using SQLite;
 
-namespace Foodshare.Models;
-
-public class User
+namespace Foodshare.Models
 {
-    [PrimaryKey, AutoIncrement] public int Id { get; set; }
-    [Indexed, Unique] public string Email { get; set; } = "";
-    public string PasswordHash { get; set; } = "";
-    public string FullName { get; set; } = "";
-    public string Phone { get; set; } = "";
-    public UserRole Role { get; set; }
-    public string City { get; set; } = "Атырау";
+    public class User
+    {
+        [PrimaryKey]
+        public string Id { get; set; } = System.Guid.NewGuid().ToString();
 
-    // Org for Restaurant/NGO
-    public string OrgName { get; set; } = "";
-    public string BinIin { get; set; } = ""; // БИН/ИИН
-    public string Address { get; set; } = "";
-    public double? Latitude { get; set; }
-    public double? Longitude { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
 
-    // Volunteer vehicle
-    public string VehicleInfo { get; set; } = "";
+        public string FullName { get; set; } = string.Empty;
 
-    // Ratings counters
-    public double KgDonated { get; set; } = 0;
-    public int DeliveriesDone { get; set; } = 0;
-    public int NgoResponses { get; set; } = 0;
+        // Для юр лиц
+        public string OrgName { get; set; } = string.Empty;
+        public string BinIin { get; set; } = string.Empty;
+
+        // Контакты и адрес
+        public string Phone { get; set; } = string.Empty;
+        public string Address { get; set; } = string.Empty;
+        public string City { get; set; } = "Атырау";
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+
+        public UserRole Role { get; set; }
+
+        // Рейтинги/метрики
+        public double KgDonated { get; set; } = 0;     // для ресторанов
+        public int DeliveriesDone { get; set; } = 0;   // для волонтёров
+        public int NgoResponses { get; set; } = 0;     // для НПО
+    }
 }

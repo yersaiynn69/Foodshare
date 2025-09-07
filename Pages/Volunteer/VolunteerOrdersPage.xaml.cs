@@ -1,35 +1,66 @@
-using Foodshare.Services;
+using System.Collections.ObjectModel;
 using Foodshare.Models;
+using Foodshare.Services;
 
-namespace Foodshare.Pages.Volunteer;
-
-public partial class VolunteerOrdersPage : TabbedPage
+namespace Foodshare.Pages.Volunteer
 {
-    readonly DbService _db;
-    public VolunteerOrdersPage(){ InitializeComponent(); _db=Application.Current.Services.GetService<DbService>()!; }
-
-    protected override async void OnAppearing()
+    public partial class VolunteerOrdersPage : ContentPage
     {
-        var bookings = await _db.Conn.Table<Booking>().Where(b=>b.Status==BookingStatus.Reserved).ToListAsync();
-        var foods = await _db.Conn.Table<FoodItem>().ToListAsync();
-        var users = await _db.Conn.Table<User>().ToListAsync();
+        public ObservableCollection<Row> Items { get; } = new();
 
-        var items = from b in bookings
-                    join f in foods on b.FoodItemId equals f.Id
-                    join r in users on f.RestaurantUserId equals r.Id
-                    join u in users on b.BookerUserId equals u.Id
-                    select new { BookingId=b.Id, Title=$"{f.Title} — {f.Kg:0.##} кг", Sub=$"Забрать: {r.Address} → Доставить: {u.Address}" };
-        List.ItemsSource = items.ToList();
-    }
+        public Command<string> AcceptCmd { get; }
+        public Command<string> OpenCmd { get; }
 
-    async void Accept_Clicked(object s, EventArgs e)
-    {
-        var id = (int)((Button)s).CommandParameter;
-        var b = await _db.Conn.FindAsync<Booking>(id);
-        if(b==null) return;
-        b.VolunteerUserId = Services.AuthService.CurrentUser!.Id;
-        b.Status = BookingStatus.PickedUp;
-        await _db.Conn.UpdateAsync(b);
-        await Navigation.PushAsync(new DeliveryDetailPage(id));
+        public class Row
+        {
+            public string Id { get; set; } = string.Empty;
+            public string Title { get; set; } = string.Empty;
+            public string Detail { get; set; } = string.Empty;
+        }
+
+        public VolunteerOrdersPage()
+        {
+            InitializeComponent();
+            List.BindingContext = this;
+
+            AcceptCmd = new Command<string>(async id =>
+            {
+                // текущий пользователь — волонтёр
+                var me = await AuthService.I.GetCurrentAsync();
+                if (me == null) return;
+                await DbService.I.AcceptByVolunteerAsync(id, me.Id);
+                await LoadAsync();
+            });
+
+            OpenCmd = new Command<string>(async id =>
+            {
+                await Navigation.PushAsync(new DeliveryDetailPage(id));
+            });
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await LoadAsync();
+        }
+
+        private async Task LoadAsync()
+        {
+            Items.Clear();
+            var list = await DbService.I.GetVolunteerInboxAsync();
+            foreach (var b in list)
+            {
+                var food = await DbService.I.Conn.FindAsync<FoodItem>(b.FoodItemId);
+                var title = food != null ? food.Title : "Заказ";
+                var route = $"Ресторан: {b.RestaurantUserId} → Получатель: {(string.IsNullOrEmpty(b.RecipientAddress) ? "самовывоз" : b.RecipientAddress)}";
+                Items.Add(new Row
+                {
+                    Id = b.Id,
+                    Title = title,
+                    Detail = $"{route} • {b.Kg} кг • Статус: {b.Status}"
+                });
+            }
+            List.ItemsSource = Items;
+        }
     }
 }

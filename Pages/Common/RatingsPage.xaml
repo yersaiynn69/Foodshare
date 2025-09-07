@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Foodshare.Pages.Common.RatingsPage"
-             Title="{x:Static local:Texts.Ratings}">
-    <VerticalStackLayout Padding="12" Spacing="8">
-        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-            <Label Text="Рестораны" />
-            <Label />
-            <Button Text="Волонтёры" Clicked="Vol_Clicked"/>
-            <Button Text="НПО" Clicked="Ngo_Clicked"/>
-        </Grid>
-        <CollectionView x:Name="List">
+             Title="Рейтинг">
+    <VerticalStackLayout Padding="12" Spacing="10">
+        <Picker x:Name="TypePicker" Title="Тип">
+            <x:String>Рестораны</x:String>
+            <x:String>Волонтёры</x:String>
+            <x:String>НПО</x:String>
+        </Picker>
+        <CollectionView x:Name="List" SelectionMode="None">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Frame Padding="12" Margin="0,6" BorderColor="#ddd" CornerRadius="12">
-                        <VerticalStackLayout>
-                            <Label Text="{Binding Title}" FontAttributes="Bold"/>
-                            <Label Text="{Binding Subtitle}" FontSize="12"/>
-                        </VerticalStackLayout>
+                    <Frame Margin="0,6" Padding="10" BorderColor="#E5E7EB">
+                        <Grid ColumnDefinitions="40,*,Auto" ColumnSpacing="8">
+                            <Label Text="{Binding Pos}"/>
+                            <Label Grid.Column="1" Text="{Binding Name}"/>
+                            <Label Grid.Column="2" Text="{Binding Score}"/>
+                        </Grid>
                     </Frame>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

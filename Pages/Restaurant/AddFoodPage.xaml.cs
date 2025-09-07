@@ -1,40 +1,33 @@
-using Foodshare.Services;
 using Foodshare.Models;
-using Microsoft.Maui.Devices.Sensors;
+using Foodshare.Services;
 
-namespace Foodshare.Pages.Restaurant;
-
-public partial class AddFoodPage : ContentPage
+namespace Foodshare.Pages.Restaurant
 {
-    readonly DbService _db;
-    string _photoPath = "";
-    public AddFoodPage(){ InitializeComponent(); _db=Application.Current.Services.GetService<DbService>()!; }
-
-    async void Photo_Clicked(object s, EventArgs e)
+    public partial class AddFoodPage : ContentPage
     {
-        var file = await FilePicker.PickAsync(new PickOptions{ FileTypes = FilePickerFileType.Images });
-        if (file!=null){ _photoPath = file.FullPath; Photo.Source = _photoPath; }
-    }
+        public AddFoodPage()
+        {
+            InitializeComponent();
+            SaveBtn.Clicked += async (_, __) =>
+            {
+                var me = await AuthService.I.GetCurrentAsync();
+                if (me == null) return;
 
-    async void Add_Clicked(object s, EventArgs e)
-    {
-        var me = Services.AuthService.CurrentUser!;
-        double.TryParse(KgEntry.Text, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var kg);
-        double? lat=null,lng=null;
-        try{ var loc = (await Geocoding.GetLocationsAsync(AddressEntry.Text)).FirstOrDefault(); if(loc!=null){ lat=loc.Latitude; lng=loc.Longitude; } }catch{}
-        var item = new FoodItem{
-            RestaurantUserId = me.Id,
-            Title = TitleEntry.Text ?? "",
-            Description = DescEntry.Text ?? "",
-            Kg = kg,
-            ExpiresAt = DateTime.UtcNow.AddHours(8),
-            Address = AddressEntry.Text ?? me.Address,
-            Latitude = lat, Longitude = lng,
-            IsAvailable = true,
-            PhotoPath = _photoPath
-        };
-        await _db.Conn.InsertAsync(item);
-        await DisplayAlert("Готово","Еда добавлена и доступна на карте/в каталоге","OK");
-        await Navigation.PopAsync();
+                var f = new FoodItem
+                {
+                    RestaurantUserId = me.Id,
+                    Title = TitleEntry.Text?.Trim() ?? "",
+                    Description = DescEditor.Text?.Trim() ?? "",
+                    Kg = double.TryParse(KgEntry.Text, out var kg) ? kg : 0,
+                    Address = AddressEntry.Text?.Trim() ?? "",
+                    Latitude = double.TryParse(LatEntry.Text, out var lat) ? lat : 0,
+                    Longitude = double.TryParse(LngEntry.Text, out var lng) ? lng : 0,
+                    IsAvailable = true
+                };
+                await DbService.I.AddFoodAsync(f);
+                await DisplayAlert("Готово", "Еда добавлена", "OK");
+                await Navigation.PopAsync();
+            };
+        }
     }
 }

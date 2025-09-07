@@ -1,43 +1,32 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-            x:Class="Foodshare.Pages.Ngo.NgoHomePage"
-            BarBackgroundColor="{StaticResource Primary}" BarTextColor="White">
-    <ContentPage Title="{x:Static local:Texts.Catalog}">
-        <ScrollView>
-            <VerticalStackLayout Padding="16" Spacing="12">
-                <Label Text="{x:Static local:Texts.Ngo_HelpQuestion}" FontSize="22" />
-                <Button Text="{x:Static local:Texts.FindFoodNearby}" Clicked="Map_Clicked"/>
-                <Button Text="{x:Static local:Texts.MyBookings}" Clicked="Bookings_Clicked"/>
-                <CollectionView x:Name="CatalogList"/>
-            </VerticalStackLayout>
-        </ScrollView>
-    </ContentPage>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Foodshare.Pages.Ngo.NgoHomePage"
+             Title="Есть кому помочь?">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Найти еду поблизости" x:Name="MapBtn"/>
+                <Button Text="Мои бронирования" x:Name="BookingsBtn"/>
+            </HorizontalStackLayout>
 
-    <ContentPage Title="{x:Static local:Texts.Map}">
-        <pages:FoodMapPage xmlns:pages="clr-namespace:Foodshare.Pages.Common"/>
-    </ContentPage>
+            <Button Text="Нуждающиеся" x:Name="PeopleBtn"/>
 
-    <ContentPage Title="Нуждающиеся">
-        <CollectionView x:Name="People" Padding="12">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Frame Padding="12" Margin="0,8" BorderColor="#ddd" CornerRadius="12">
-                        <VerticalStackLayout>
-                            <Label Text="{Binding FullName}" FontAttributes="Bold"/>
-                            <Label Text="{Binding Address}" FontSize="12"/>
-                            <Button Text="Позвонить" CommandParameter="{Binding Phone}" Clicked="Call_Clicked"/>
-                        </VerticalStackLayout>
-                    </Frame>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </ContentPage>
-
-    <ContentPage Title="{x:Static local:Texts.Ratings}">
-        <pages:RatingsPage xmlns:pages="clr-namespace:Foodshare.Pages.Common"/>
-    </ContentPage>
-
-    <ContentPage Title="{x:Static local:Texts.Profile}">
-        <pages:NgoProfilePage xmlns:pages="clr-namespace:Foodshare.Pages.Ngo"/>
-    </ContentPage>
-</TabbedPage>
+            <Label Text="Доступная еда" FontSize="18" FontAttributes="Bold"/>
+            <CollectionView x:Name="FoodList" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Margin="0,6" Padding="10" BorderColor="#E5E7EB">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding Title}" FontAttributes="Bold"/>
+                                <Label Text="{Binding Description}" FontSize="12" TextColor="#6B7280"/>
+                                <Label Text="{Binding Kg}" FontSize="12"/>
+                                <Button Text="Забронировать для подопечного" Command="{Binding BookCmd}" CommandParameter="{Binding Id}"/>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Foodshare.Pages.Auth.LoginPage"
-             BackgroundColor="#F6FFF8">
+             Title="Вход">
     <ScrollView>
-        <VerticalStackLayout Padding="24" Spacing="18">
-            <Image Source="dotnet_bot.png" HeightRequest="120" HorizontalOptions="Center"/>
-            <Label Text="{x:Static local:Texts.AppTitle}" FontSize="28" HorizontalOptions="Center" />
-            <Entry x:Name="EmailEntry" Placeholder="{x:Static local:Texts.Email}" Keyboard="Email"/>
-            <Entry x:Name="PasswordEntry" Placeholder="{x:Static local:Texts.Password}" IsPassword="True"/>
-            <Picker x:Name="CityPicker" Title="{x:Static local:Texts.City}">
-                <Picker.Items>
-                    <x:String>Атырау</x:String>
-                </Picker.Items>
-                <Picker.SelectedIndex>0</Picker.SelectedIndex>
+        <VerticalStackLayout Padding="24" Spacing="14">
+            <Image Source="logo.png" HeightRequest="96" HorizontalOptions="Center"/>
+            <Entry x:Name="EmailEntry" Placeholder="Email"/>
+            <Entry x:Name="PasswordEntry" Placeholder="Пароль" IsPassword="True"/>
+
+            <Picker x:Name="CityPicker" Title="Город">
+                <x:String>Атырау</x:String>
             </Picker>
 
-            <Button Text="{x:Static local:Texts.Login}" Clicked="Login_Clicked"/>
-            <HorizontalStackLayout HorizontalOptions="Center">
-                <Label Text="{x:Static local:Texts.NoAccount}" />
-                <Button Text="{x:Static local:Texts.Register}" Padding="6,0" BackgroundColor="Transparent" TextColor="{StaticResource Secondary}" Clicked="Register_Clicked"/>
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Войти" x:Name="LoginBtn"/>
+                <Button Text="Нет аккаунта?" x:Name="RegisterBtn"/>
             </HorizontalStackLayout>
-            <Button Text="{x:Static local:Texts.ForgotPassword}" BackgroundColor="Transparent" TextColor="{StaticResource Secondary}" Clicked="Forgot_Clicked"/>
-            <Button Text="{x:Static local:Texts.Language}: RU/KZ" BackgroundColor="Transparent" TextColor="{StaticResource Secondary}" Clicked="Lang_Clicked"/>
+
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Забыли пароль" x:Name="ForgotBtn"/>
+                <Button Text="Язык: Русский / Қазақша" x:Name="LangBtn"/>
+            </HorizontalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

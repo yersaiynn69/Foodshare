@@ -1,36 +1,42 @@
+using System.Collections.ObjectModel;
 using Foodshare.Services;
-using Foodshare.Models;
 
-namespace Foodshare.Pages.Common;
-
-public partial class RatingsPage : ContentPage
+namespace Foodshare.Pages.Common
 {
-    readonly DbService _db;
-    enum Mode { Restaurants, Volunteers, NGOs }
-    Mode _mode = Mode.Restaurants;
-    public RatingsPage(){ InitializeComponent(); _db = Application.Current.Services.GetService<DbService>()!; }
-
-    protected override async void OnAppearing(){ await Load(); }
-
-    async Task Load()
+    public partial class RatingsPage : ContentPage
     {
-        if (_mode == Mode.Restaurants)
+        public ObservableCollection<Row> Items { get; } = new();
+
+        public class Row { public int Pos { get; set; } public string Name { get; set; } = ""; public string Score { get; set; } = ""; }
+
+        public RatingsPage()
         {
-            var q = await _db.Conn.Table<User>().Where(u=>u.Role==UserRole.Restaurant).OrderByDescending(u=>u.KgDonated).ToListAsync();
-            List.ItemsSource = q.Select(u=> new { Title = $"{u.OrgName} — {u.KgDonated:0.##} кг", Subtitle=$"{u.Address}" });
+            InitializeComponent();
+            List.BindingContext = this;
+            TypePicker.SelectedIndexChanged += async (_, __) => await LoadAsync();
+            TypePicker.SelectedIndex = 0;
         }
-        else if (_mode == Mode.Volunteers)
+
+        protected override async void OnAppearing()
         {
-            var q = await _db.Conn.Table<User>().Where(u=>u.Role==UserRole.Volunteer).OrderByDescending(u=>u.DeliveriesDone).ToListAsync();
-            List.ItemsSource = q.Select(u=> new { Title = $"{u.FullName} — доставок: {u.DeliveriesDone}", Subtitle=$"{u.Phone}" });
+            base.OnAppearing();
+            await LoadAsync();
         }
-        else
+
+        private async Task LoadAsync()
         {
-            var q = await _db.Conn.Table<User>().Where(u=>u.Role==UserRole.NGO).OrderByDescending(u=>u.NgoResponses).ToListAsync();
-            List.ItemsSource = q.Select(u=> new { Title = $"{u.OrgName} — откликов: {u.NgoResponses}", Subtitle=$"{u.Address}" });
+            Items.Clear();
+            var idx = TypePicker.SelectedIndex;
+            var data = idx switch
+            {
+                0 => (await DbService.I.GetRestaurantRatingAsync()).Select(x => (x.Name, Score: $"{x.Score:0.##} кг")).ToList(),
+                1 => (await DbService.I.GetVolunteerRatingAsync()).Select(x => (x.Name, Score: $"{x.Score:0} рейсов")).ToList(),
+                _ => (await DbService.I.GetNgoRatingAsync()).Select(x => (x.Name, Score: $"{x.Score:0} откликов")).ToList()
+            };
+            int pos = 1;
+            foreach (var r in data)
+                Items.Add(new Row { Pos = pos++, Name = r.Name, Score = r.Score });
+            List.ItemsSource = Items;
         }
     }
-
-    async void Vol_Clicked(object s, EventArgs e){ _mode=Mode.Volunteers; await Load(); }
-    async void Ngo_Clicked(object s, EventArgs e){ _mode=Mode.NGOs; await Load(); }
 }

@@ -1,20 +1,47 @@
-using Foodshare.Services;
 using Foodshare.Models;
+using Foodshare.Services;
 
-namespace Foodshare.Pages.Volunteer;
-
-public partial class DeliveryDetailPage : ContentPage
+namespace Foodshare.Pages.Volunteer
 {
-    readonly DbService _db; readonly int _bookingId;
-    User rest = null!, rec = null!;
-    FoodItem food = null!;
-    public DeliveryDetailPage(int bookingId){ InitializeComponent(); _db=Application.Current.Services.GetService<DbService>()!; _bookingId=bookingId; }
-
-    protected override async void OnAppearing()
+    public partial class DeliveryDetailPage : ContentPage
     {
-        var b = await _db.Conn.FindAsync<Booking>(_bookingId);
-        food = await _db.Conn.FindAsync<FoodItem>(b.FoodItemId);
-        rest = await _db.Conn.FindAsync<User>(food.RestaurantUserId);
-        rec = await _db.Conn.FindAsync<User>(b.BookerUserId);
+        private readonly string _bookingId;
+        private Booking? _booking;
+        private FoodItem? _food;
+        private User? _rest;
 
-        Rest.Text = $"Ресторан: {rest.OrgName}\nАдрес: {rest.Address}\nЕда: {food.Title} ({food
+        public DeliveryDetailPage(string bookingId)
+        {
+            InitializeComponent();
+            _bookingId = bookingId;
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            _booking = await DbService.I.Conn.FindAsync<Booking>(_bookingId);
+            if (_booking == null) { await DisplayAlert("Ошибка", "Бронирование не найдено", "OK"); await Navigation.PopAsync(); return; }
+
+            _food = await DbService.I.Conn.FindAsync<FoodItem>(_booking.FoodItemId);
+            _rest = await DbService.I.Conn.FindAsync<User>(_booking.RestaurantUserId);
+
+            TitleLbl.Text = _food?.Title ?? "Доставка";
+            FoodLbl.Text  = $"Еда: {_food?.Title} • {_food?.Kg} кг";
+            RestLbl.Text  = $"Ресторан: {_rest?.OrgName ?? _rest?.FullName}";
+            RecipLbl.Text = string.IsNullOrWhiteSpace(_booking.RecipientAddress)
+                ? "Получатель: самовывоз"
+                : $"Получатель: {_booking.RecipientName}, {_booking.RecipientPhone}, {_booking.RecipientAddress}";
+
+            CallBtn.IsVisible = !string.IsNullOrWhiteSpace(_booking.RecipientPhone);
+            CallBtn.Clicked += (_, __) => Launcher.OpenAsync(new Uri($"tel:{_booking!.RecipientPhone}"));
+
+            DoneBtn.Clicked += async (_, __) =>
+            {
+                await DbService.I.CompleteDeliveryAsync(_bookingId);
+                await DisplayAlert("Готово", "Доставка завершена", "OK");
+                await Navigation.PopAsync();
+            };
+        }
+    }
+}

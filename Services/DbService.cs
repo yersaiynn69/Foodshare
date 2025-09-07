@@ -1,97 +1,169 @@
-using SQLite;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Foodshare.Models;
+using SQLite;
 
-namespace Foodshare.Services;
-
-public class DbService
+namespace Foodshare.Services
 {
-    readonly SQLiteAsyncConnection _db;
-    public DbService()
+    public sealed class DbService
     {
-        var path = Path.Combine(FileSystem.AppDataDirectory, "foodshare.db3");
-        _db = new SQLiteAsyncConnection(path);
-        _db.CreateTableAsync<User>().Wait();
-        _db.CreateTableAsync<FoodItem>().Wait();
-        _db.CreateTableAsync<Booking>().Wait();
-        _db.CreateTableAsync<NeedyPerson>().Wait();
-        Seed().Wait();
-    }
+        private static readonly Lazy<DbService> _lazy = new(() => new DbService());
+        public static DbService I => _lazy.Value;
 
-    async Task Seed()
-    {
-        // demo data once
-        if (await _db.Table<User>().CountAsync() == 0)
+        private SQLiteAsyncConnection _db;
+
+        private DbService() { }
+
+        public async Task InitAsync(string dbPath)
         {
-            var rest = new User
+            if (_db != null) return;
+            _db = new SQLiteAsyncConnection(dbPath);
+            await _db.CreateTableAsync<User>();
+            await _db.CreateTableAsync<FoodItem>();
+            await _db.CreateTableAsync<Booking>();
+            await _db.CreateTableAsync<NeedyPerson>();
+
+            // сиды нуждающихся
+            var cnt = await _db.Table<NeedyPerson>().CountAsync();
+            if (cnt == 0)
             {
-                Email = "rest@saiynex.kz",
-                PasswordHash = Hash("123456"),
-                FullName = "Ресторан 'Добро'",
-                Role = UserRole.Restaurant,
-                OrgName = "ТОО ДоброФуд",
-                BinIin = "123456789012",
-                Address = "Атырау, Сатыбалдиева 10",
-                City = "Атырау",
-                Latitude = 47.0945,
-                Longitude = 51.9234
+                await _db.InsertAsync(new NeedyPerson
+                {
+                    FullName = "Айгуль Т.",
+                    Phone = "+7707*******",
+                    Address = "Атырау, пр. Азаттык 10",
+                    Notes = "Многодетная семья"
+                });
+                await _db.InsertAsync(new NeedyPerson
+                {
+                    FullName = "Даурен К.",
+                    Phone = "+7707*******",
+                    Address = "Атырау, ул. Сатыбалдиева 3",
+                    Notes = "Пенсионер"
+                });
+            }
+        }
+
+        public SQLiteAsyncConnection Conn => _db;
+
+        // ---------- Пользователи ----------
+        public Task<User?> GetUserByEmailAsync(string email) =>
+            _db.Table<User>().Where(x => x.Email == email).FirstOrDefaultAsync();
+
+        public Task<User?> GetUserByIdAsync(string id) =>
+            _db.Table<User>().Where(x => x.Id == id).FirstOrDefaultAsync();
+
+        public Task<int> UpsertUserAsync(User u) => _db.InsertOrReplaceAsync(u);
+
+        // ---------- Еда ----------
+        public Task<List<FoodItem>> GetAvailableFoodAsync() =>
+            _db.Table<FoodItem>().Where(x => x.IsAvailable).OrderByDescending(x => x.ExpiresAt).ToListAsync();
+
+        public Task<List<FoodItem>> GetRestaurantHistoryAsync(string restaurantUserId) =>
+            _db.Table<FoodItem>().Where(x => x.RestaurantUserId == restaurantUserId).OrderByDescending(x => x.ExpiresAt).ToListAsync();
+
+        public Task<int> AddFoodAsync(FoodItem f) => _db.InsertAsync(f);
+
+        public async Task ReserveFoodAsync(string foodId, string bookerUserId, bool createdByNgo, double kg,
+            string? recipientName = null, string? recipientPhone = null, string? recipientAddress = null,
+            double? recipientLat = null, double? recipientLng = null)
+        {
+            var food = await _db.Table<FoodItem>().Where(x => x.Id == foodId && x.IsAvailable).FirstOrDefaultAsync();
+            if (food == null) throw new InvalidOperationException("Еда недоступна");
+
+            food.IsAvailable = false;
+            await _db.UpdateAsync(food);
+
+            var b = new Booking
+            {
+                FoodItemId = food.Id,
+                RestaurantUserId = food.RestaurantUserId,
+                BookerUserId = bookerUserId,
+                CreatedByNgo = createdByNgo,
+                Kg = kg,
+                Status = BookingStatus.Reserved,
+                RecipientName = recipientName ?? string.Empty,
+                RecipientPhone = recipientPhone ?? string.Empty,
+                RecipientAddress = recipientAddress ?? string.Empty,
+                RecipientLat = recipientLat ?? 0,
+                RecipientLng = recipientLng ?? 0
             };
-            await _db.InsertAsync(rest);
+            await _db.InsertAsync(b);
+        }
 
-            await _db.InsertAsync(new FoodItem
-            {
-                RestaurantUserId = rest.Id,
-                Title = "Плов и хлеб",
-                Description = "Остатки после обеда, 3 порции",
-                Kg = 1.5,
-                ExpiresAt = DateTime.UtcNow.AddHours(4),
-                Address = rest.Address,
-                Latitude = rest.Latitude,
-                Longitude = rest.Longitude,
-                IsAvailable = true
-            });
+        public Task<List<Booking>> GetRestaurantBookingsAsync(string restaurantUserId) =>
+            _db.Table<Booking>().Where(x => x.RestaurantUserId == restaurantUserId)
+                .OrderByDescending(x => x.CreatedAt).ToListAsync();
 
-            await _db.InsertAsync(new User
-            {
-                Email = "npo@saiynex.kz",
-                PasswordHash = Hash("123456"),
-                FullName = "НПО 'Поддержка'",
-                Role = UserRole.NGO,
-                OrgName = "ОФ Поддержка",
-                BinIin = "990099009900",
-                Address = "Атырау, Азаттык 20",
-                City = "Атырау"
-            });
+        public Task<List<Booking>> GetVolunteerInboxAsync() =>
+            _db.Table<Booking>().Where(x => x.Status == BookingStatus.Reserved || x.Status == BookingStatus.InDelivery)
+                .OrderByDescending(x => x.CreatedAt).ToListAsync();
 
-            await _db.InsertAsync(new User
-            {
-                Email = "needy@saiynex.kz",
-                PasswordHash = Hash("123456"),
-                FullName = "Айдарбек Нуждающийся",
-                Role = UserRole.Needy,
-                Phone = "+77010000000",
-                Address = "Атырау, Сатпаева 5",
-                City = "Атырау"
-            });
+        public async Task AcceptByVolunteerAsync(string bookingId, string volunteerUserId)
+        {
+            var b = await _db.FindAsync<Booking>(bookingId);
+            if (b == null) throw new InvalidOperationException("Бронь не найдена");
+            b.VolunteerUserId = volunteerUserId;
+            b.Status = BookingStatus.InDelivery;
+            await _db.UpdateAsync(b);
+        }
 
-            await _db.InsertAsync(new User
-            {
-                Email = "vol@saiynex.kz",
-                PasswordHash = Hash("123456"),
-                FullName = "Ерлан Волонтёр",
-                Role = UserRole.Volunteer,
-                Phone = "+77020000000",
-                VehicleInfo = "Седан"
-            });
+        public async Task CompleteDeliveryAsync(string bookingId)
+        {
+            var b = await _db.FindAsync<Booking>(bookingId);
+            if (b == null) throw new InvalidOperationException("Бронь не найдена");
 
-            await _db.InsertAllAsync(new[]
-            {
-                new NeedyPerson{ FullName="Семья Ибраевы", Phone="+77030000001", Address="Атырау, Махамбет 12", Note="3 детей"},
-                new NeedyPerson{ FullName="Пенсионерка Майра", Phone="+77030000002", Address="Атырау, Байдулла 7", Note="одинокая"},
-            });
+            var food = await _db.FindAsync<FoodItem>(b.FoodItemId);
+            var rest = await _db.FindAsync<User>(b.RestaurantUserId);
+            User? vol = null;
+            User? ngo = null;
+
+            if (!string.IsNullOrEmpty(b.VolunteerUserId))
+                vol = await _db.FindAsync<User>(b.VolunteerUserId);
+
+            if (b.CreatedByNgo && !string.IsNullOrEmpty(b.BookerUserId))
+                ngo = await _db.FindAsync<User>(b.BookerUserId);
+
+            if (rest != null) { rest.KgDonated += b.Kg > 0 ? b.Kg : (food?.Kg ?? 0); await _db.UpdateAsync(rest); }
+            if (vol != null) { vol.DeliveriesDone += 1; await _db.UpdateAsync(vol); }
+            if (ngo != null) { ngo.NgoResponses += 1; await _db.UpdateAsync(ngo); }
+
+            b.Status = BookingStatus.Completed;
+            b.CompletedAt = DateTime.UtcNow;
+            await _db.UpdateAsync(b);
+        }
+
+        // ---------- Нуждающиеся ----------
+        public Task<List<NeedyPerson>> GetPeopleAsync() =>
+            _db.Table<NeedyPerson>().OrderByDescending(x => x.CreatedAt).ToListAsync();
+
+        public Task<NeedyPerson?> GetPersonAsync(string id) =>
+            _db.Table<NeedyPerson>().Where(x => x.Id == id).FirstOrDefaultAsync();
+
+        public Task<int> UpsertPersonAsync(NeedyPerson p) => _db.InsertOrReplaceAsync(p);
+
+        // ---------- Рейтинги ----------
+        public async Task<List<(string Name, double Score)>> GetRestaurantRatingAsync()
+        {
+            var users = await _db.Table<User>().Where(u => u.Role == UserRole.Restaurant)
+                .OrderByDescending(u => u.KgDonated).ToListAsync();
+            return users.Select(u => (u.OrgName?.Length > 0 ? u.OrgName : u.FullName, u.KgDonated)).ToList();
+        }
+
+        public async Task<List<(string Name, double Score)>> GetVolunteerRatingAsync()
+        {
+            var users = await _db.Table<User>().Where(u => u.Role == UserRole.Volunteer)
+                .OrderByDescending(u => u.DeliveriesDone).ToListAsync();
+            return users.Select(u => (u.FullName, (double)u.DeliveriesDone)).ToList();
+        }
+
+        public async Task<List<(string Name, double Score)>> GetNgoRatingAsync()
+        {
+            var users = await _db.Table<User>().Where(u => u.Role == UserRole.Ngo)
+                .OrderByDescending(u => u.NgoResponses).ToListAsync();
+            return users.Select(u => (u.OrgName?.Length > 0 ? u.OrgName : u.FullName, (double)u.NgoResponses)).ToList();
         }
     }
-
-    public static string Hash(string s) => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(s)));
-
-    public SQLiteAsyncConnection Conn => _db;
 }
