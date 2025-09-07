@@ -1,23 +1,32 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<TabbedPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-            x:Class="Foodshare.Pages.Restaurant.RestaurantHomePage"
-            BarBackgroundColor="{StaticResource Primary}" BarTextColor="White">
-    <ContentPage Title="{x:Static local:Texts.Restaurant_Home}">
-        <ScrollView>
-            <VerticalStackLayout Padding="16" Spacing="12">
-                <Button Text="{x:Static local:Texts.AddFood}" Clicked="Add_Clicked"/>
-                <Button Text="{x:Static local:Texts.MyDistributions}" Clicked="My_Clicked"/>
-                <Button Text="{x:Static local:Texts.ReservedOrders}" Clicked="Reserved_Clicked"/>
-                <CollectionView x:Name="History"/>
-            </VerticalStackLayout>
-        </ScrollView>
-    </ContentPage>
-
-    <ContentPage Title="{x:Static local:Texts.Ratings}">
-        <pages:RatingsPage xmlns:pages="clr-namespace:Foodshare.Pages.Common"/>
-    </ContentPage>
-
-    <ContentPage Title="{x:Static local:Texts.Profile}">
-        <pages:RestaurantProfilePage xmlns:pages="clr-namespace:Foodshare.Pages.Restaurant"/>
-    </ContentPage>
-</TabbedPage>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Foodshare.Pages.Restaurant.RestaurantHomePage"
+             Title="Домой">
+  <ScrollView>
+    <VerticalStackLayout Padding="16" Spacing="10">
+      <HorizontalStackLayout Spacing="10">
+        <Button x:Name="AddBtn" Text="Добавить еду"/>
+        <Button x:Name="ReservedBtn" Text="Забронированные"/>
+        <Button x:Name="HistoryBtn" Text="История"/>
+      </HorizontalStackLayout>
+      <Label Text="Ваши активные позиции" FontAttributes="Bold" />
+      <CollectionView x:Name="FoodList" SelectionMode="None">
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Frame Margin="0,6" Padding="10" BorderColor="#E5E7EB">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <VerticalStackLayout>
+                  <Label Text="{Binding Title}" FontAttributes="Bold"/>
+                  <Label Text="{Binding Description}" FontSize="12" TextColor="#6B7280"/>
+                  <Label Text="{Binding Kg, StringFormat='{}{0} кг'}" FontSize="12"/>
+                </VerticalStackLayout>
+                <Label Grid.Column="1" Text="Доступно" VerticalOptions="Center" IsVisible="{Binding IsAvailable}"/>
+              </Grid>
+            </Frame>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

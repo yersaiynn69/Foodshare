@@ -1,31 +1,24 @@
-using Foodshare.Models;
 using Foodshare.Services;
-using Foodshare.Pages.Restaurant;
-using Microsoft.Maui.Devices.Sensors;
 
-namespace Foodshare.Pages.Auth;
-
-public partial class RegisterRestaurantPage : ContentPage
+namespace Foodshare.Pages.Auth
 {
-    readonly AuthService _auth; readonly DbService _db;
-    public RegisterRestaurantPage(){ InitializeComponent(); _auth = Application.Current.Services.GetService<AuthService>()!; _db = Application.Current.Services.GetService<DbService>()!; }
-
-    async void Create_Clicked(object sender, EventArgs e)
+    public partial class RegisterRestaurantPage : ContentPage
     {
-        if (await _auth.EmailExists(Email.Text!)) { await DisplayAlert("Ошибка","Email уже существует","OK"); return; }
-        double? lat=null,lng=null;
-        try{
-            var locations = await Geocoding.GetLocationsAsync(Address.Text);
-            var loc = locations?.FirstOrDefault();
-            if(loc!=null){ lat=loc.Latitude; lng=loc.Longitude; }
-        }catch{}
-        var u = new User{
-            OrgName = OrgName.Text?.Trim() ?? "", BinIin = Bin.Text?.Trim() ?? "",
-            FullName = FullName.Text?.Trim() ?? "", Phone = Phone.Text?.Trim() ?? "",
-            Email = Email.Text?.Trim() ?? "", Address = Address.Text?.Trim() ?? "",
-            Role = UserRole.Restaurant, City="Атырау", Latitude=lat, Longitude=lng
-        };
-        await _auth.Register(u, Password.Text ?? "");
-        await Navigation.PushAsync(new RestaurantHomePage());
+        public RegisterRestaurantPage() { InitializeComponent(); SaveBtn.Clicked += OnSave; }
+
+        private async void OnSave(object? s, EventArgs e)
+        {
+            var ok = await AuthService.I.RegisterRestaurantAsync(
+                org: OrgName.Text?.Trim() ?? "",
+                bin: Bin.Text?.Trim() ?? "",
+                phone: Phone.Text?.Trim() ?? "",
+                email: Email.Text?.Trim() ?? "",
+                city: "Атырау",
+                addr: Address.Text?.Trim() ?? "",
+                pass: Password.Text ?? ""
+            );
+            if (!ok) { await DisplayAlert("Ошибка", "Проверьте данные", "OK"); return; }
+            await Shell.Current.GoToAsync("//home");
+        }
     }
 }

@@ -1,17 +1,18 @@
 using Foodshare.Services;
-using Foodshare.Models;
 
-namespace Foodshare.Pages.Restaurant;
-
-public partial class MyDistributionsPage : ContentPage
+namespace Foodshare.Pages.Restaurant
 {
-    readonly DbService _db;
-    public MyDistributionsPage(){ InitializeComponent(); _db=Application.Current.Services.GetService<DbService>()!; }
-
-    protected override async void OnAppearing()
+    public partial class MyDistributionsPage : ContentPage
     {
-        var me = Services.AuthService.CurrentUser!;
-        var foods = await _db.Conn.Table<FoodItem>().Where(f=>f.RestaurantUserId==me.Id && !f.IsAvailable).ToListAsync();
-        List.ItemsSource = foods.Select(f=> new Label{ Text=$"{f.Title} — {f.Kg:0.##} кг (отдано)" }).ToList();
+        public MyDistributionsPage() { InitializeComponent(); }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            var me = await AuthService.I.GetCurrentAsync();
+            if (me == null) return;
+            var list = await DbService.I.GetRestaurantHistoryAsync(me.Id);
+            List.ItemsSource = list;
+        }
     }
 }

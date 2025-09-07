@@ -1,25 +1,48 @@
-using Foodshare.Services;
+using System.Collections.ObjectModel;
 using Foodshare.Models;
+using Foodshare.Services;
 
-namespace Foodshare.Pages.Restaurant;
-
-public partial class ReservedOrdersPage : ContentPage
+namespace Foodshare.Pages.Restaurant
 {
-    readonly DbService _db;
-    public ReservedOrdersPage(){ InitializeComponent(); _db=Application.Current.Services.GetService<DbService>()!; }
-
-    protected override async void OnAppearing()
+    public partial class ReservedOrdersPage : ContentPage
     {
-        var me = Services.AuthService.CurrentUser!;
-        var foods = await _db.Conn.Table<FoodItem>().Where(f=>f.RestaurantUserId==me.Id).ToListAsync();
-        var bookings = await _db.Conn.Table<Booking>().Where(b=>b.Status==BookingStatus.Reserved || b.Status==BookingStatus.PickedUp).ToListAsync();
-        var users = await _db.Conn.Table<User>().ToListAsync();
+        public class Row
+        {
+            public string Title { get; set; } = "";
+            public string Detail { get; set; } = "";
+        }
 
-        var items = from b in bookings
-                    join f in foods on b.FoodItemId equals f.Id
-                    join u in users on b.BookerUserId equals u.Id
-                    select new { Title=$"{f.Title} — {f.Kg:0.##} кг", Booker=$"Получатель: {u.FullName} ({u.Phone})" };
+        private readonly ObservableCollection<Row> _items = new();
 
-        List.ItemsSource = items.ToList();
+        public ReservedOrdersPage()
+        {
+            InitializeComponent();
+            List.ItemsSource = _items;
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await LoadAsync();
+        }
+
+        private async Task LoadAsync()
+        {
+            _items.Clear();
+            var me = await AuthService.I.GetCurrentAsync();
+            if (me == null) return;
+            var bookings = await DbService.I.GetRestaurantBookingsAsync(me.Id);
+            foreach (var b in bookings.Where(x => x.Status != BookingStatus.Completed))
+            {
+                var food = await DbService.I.Conn.FindAsync<FoodItem>(b.FoodItemId);
+                var who  = b.CreatedByNgo ? "НПО" : "Получатель";
+                var recip = string.IsNullOrWhiteSpace(b.RecipientName) ? "" : $" • {b.RecipientName} {b.RecipientPhone}";
+                _items.Add(new Row
+                {
+                    Title = food?.Title ?? "Заказ",
+                    Detail = $"{who}{recip} • {b.Kg} кг • Статус: {b.Status}"
+                });
+            }
+        }
     }
 }

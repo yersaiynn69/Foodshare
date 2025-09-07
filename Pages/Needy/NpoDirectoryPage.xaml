@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Foodshare.Pages.Needy.NpoDirectoryPage"
-             Title="НПО">
-    <CollectionView x:Name="List" Padding="12">
-        <CollectionView.ItemTemplate>
-            <DataTemplate>
-                <Frame Padding="12" Margin="0,8" BorderColor="#ddd" CornerRadius="12">
-                    <VerticalStackLayout>
-                        <Label Text="{Binding Title}" FontAttributes="Bold"/>
-                        <Label Text="{Binding Address}" FontSize="12"/>
-                        <Button Text="Позвонить" CommandParameter="{Binding Phone}" Clicked="Call_Clicked"/>
-                    </VerticalStackLayout>
-                </Frame>
-            </DataTemplate>
-        </CollectionView.ItemTemplate>
-    </CollectionView>
+             Title="Список НПО">
+  <CollectionView x:Name="List" SelectionMode="None">
+    <CollectionView.ItemTemplate>
+      <DataTemplate>
+        <Frame Margin="12,6" Padding="10" BorderColor="#E5E7EB">
+          <VerticalStackLayout Spacing="4">
+            <Label Text="{Binding Name}" FontAttributes="Bold"/>
+            <Label Text="{Binding Phone}" />
+            <HorizontalStackLayout Spacing="8">
+              <Button Text="Позвонить" Command="{Binding CallCmd}" CommandParameter="{Binding Phone}"/>
+              <Button Text="Написать" Command="{Binding MailCmd}" CommandParameter="{Binding Email}"/>
+            </HorizontalStackLayout>
+          </VerticalStackLayout>
+        </Frame>
+      </DataTemplate>
+    </CollectionView.ItemTemplate>
+  </CollectionView>
 </ContentPage>

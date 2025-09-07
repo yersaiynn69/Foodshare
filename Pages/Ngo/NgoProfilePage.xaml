@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             x:Class="Foodshare.Pages.Ngo.NgoProfilePage">
-    <VerticalStackLayout Padding="16" Spacing="8">
-        <Label x:Name="Name" FontAttributes="Bold" FontSize="18"/>
-        <Label x:Name="Address"/>
-        <Button Text="Выйти" Clicked="Logout_Clicked"/>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Foodshare.Pages.Ngo.NgoProfilePage"
+             Title="Профиль НПО">
+  <ScrollView>
+    <VerticalStackLayout Padding="16" Spacing="10">
+      <Entry x:Name="OrgName" Placeholder="Название НПО"/>
+      <Entry x:Name="Bin" Placeholder="БИН" Keyboard="Numeric"/>
+      <Entry x:Name="Phone" Placeholder="Телефон" Keyboard="Telephone"/>
+      <Entry x:Name="Address" Placeholder="Адрес"/>
+      <Button x:Name="SaveBtn" Text="Сохранить"/>
+      <Button x:Name="LogoutBtn" Text="Выйти" BackgroundColor="#DC2626" TextColor="White"/>
     </VerticalStackLayout>
-</ContentView>
+  </ScrollView>
+</ContentPage>

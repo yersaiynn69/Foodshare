@@ -1,22 +1,35 @@
-using Foodshare.Services;
-using Foodshare.Models;
-
-namespace Foodshare.Pages.Needy;
-
-public partial class NpoDirectoryPage : ContentPage
+namespace Foodshare.Pages.Needy
 {
-    readonly DbService _db;
-    public NpoDirectoryPage(){ InitializeComponent(); _db=Application.Current.Services.GetService<DbService>()!; }
-
-    protected override async void OnAppearing()
+    public partial class NpoDirectoryPage : ContentPage
     {
-        var npos = await _db.Conn.Table<User>().Where(u=>u.Role==UserRole.NGO).ToListAsync();
-        List.ItemsSource = npos.Select(n=> new { Title = $"{n.OrgName} — {n.Phone}", n.Address, n.Phone }).ToList();
-    }
+        public class Row
+        {
+            public string Name { get; set; } = "";
+            public string Phone { get; set; } = "";
+            public string Email { get; set; } = "";
+            public Command<string> CallCmd { get; set; } = null!;
+            public Command<string> MailCmd { get; set; } = null!;
+        }
 
-    async void Call_Clicked(object s, EventArgs e)
-    {
-        var phone = (string)((Button)s).CommandParameter;
-        await Launcher.OpenAsync($"tel:{phone}");
+        public NpoDirectoryPage()
+        {
+            InitializeComponent();
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            var items = new List<Row>
+            {
+                new Row { Name="БлагФонд Атырау", Phone="+7 701 000 0001", Email="help@atyrau.kz" },
+                new Row { Name="Поддержка семьи", Phone="+7 701 000 0002", Email="family@atyrau.kz" }
+            };
+            foreach (var it in items)
+            {
+                it.CallCmd = new Command<string>(p => Launcher.OpenAsync(new Uri($"tel:{p}")));
+                it.MailCmd = new Command<string>(m => Launcher.OpenAsync(new Uri($"mailto:{m}?subject=Заявка на помощь")));
+            }
+            List.ItemsSource = items;
+        }
     }
 }

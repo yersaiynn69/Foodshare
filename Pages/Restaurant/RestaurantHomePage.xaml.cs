@@ -1,21 +1,36 @@
-using Foodshare.Services;
+using System.Collections.ObjectModel;
 using Foodshare.Models;
+using Foodshare.Services;
 
-namespace Foodshare.Pages.Restaurant;
-
-public partial class RestaurantHomePage : TabbedPage
+namespace Foodshare.Pages.Restaurant
 {
-    readonly DbService _db;
-    public RestaurantHomePage(){ InitializeComponent(); _db=Application.Current.Services.GetService<DbService>()!; }
-
-    protected override async void OnAppearing()
+    public partial class RestaurantHomePage : ContentPage
     {
-        var me = Services.AuthService.CurrentUser!;
-        var foods = await _db.Conn.Table<FoodItem>().Where(f=>f.RestaurantUserId==me.Id).ToListAsync();
-        History.ItemsSource = foods.Select(f=> new Label{ Text=$"{f.Title} — {f.Kg:0.##} кг — {(f.IsAvailable?"доступно":"отдано")}" }).ToList();
-    }
+        private readonly ObservableCollection<FoodItem> _items = new();
 
-    async void Add_Clicked(object s, EventArgs e)=> await Navigation.PushAsync(new AddFoodPage());
-    async void My_Clicked(object s, EventArgs e)=> await Navigation.PushAsync(new MyDistributionsPage());
-    async void Reserved_Clicked(object s, EventArgs e)=> await Navigation.PushAsync(new ReservedOrdersPage());
+        public RestaurantHomePage()
+        {
+            InitializeComponent();
+            AddBtn.Clicked += async (_, __) => await Navigation.PushAsync(new AddFoodPage());
+            ReservedBtn.Clicked += async (_, __) => await Navigation.PushAsync(new ReservedOrdersPage());
+            HistoryBtn.Clicked += async (_, __) => await Navigation.PushAsync(new MyDistributionsPage());
+            FoodList.ItemsSource = _items;
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await LoadAsync();
+        }
+
+        private async Task LoadAsync()
+        {
+            _items.Clear();
+            var me = await AuthService.I.GetCurrentAsync();
+            if (me == null) return;
+            var list = await DbService.I.GetRestaurantHistoryAsync(me.Id);
+            foreach (var f in list.Where(x => x.IsAvailable))
+                _items.Add(f);
+        }
+    }
 }

@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             x:Class="Foodshare.Pages.Needy.NeedyProfilePage">
-    <VerticalStackLayout Padding="16" Spacing="8">
-        <Label x:Name="Name" FontAttributes="Bold" FontSize="18"/>
-        <Label x:Name="Phone"/>
-        <Button Text="Выйти" Clicked="Logout_Clicked"/>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Foodshare.Pages.Needy.NeedyProfilePage"
+             Title="Профиль">
+  <ScrollView>
+    <VerticalStackLayout Padding="16" Spacing="10">
+      <Entry x:Name="FullName" Placeholder="ФИО"/>
+      <Entry x:Name="Phone" Placeholder="Телефон" Keyboard="Telephone"/>
+      <Picker Title="Город" SelectedIndex="0"><x:String>Атырау</x:String></Picker>
+      <Entry x:Name="Address" Placeholder="Адрес"/>
+      <Button x:Name="SaveBtn" Text="Сохранить"/>
+      <Button x:Name="LangBtn" Text="Сменить язык"/>
+      <Button x:Name="LogoutBtn" Text="Выйти" BackgroundColor="#DC2626" TextColor="White"/>
     </VerticalStackLayout>
-</ContentView>
+  </ScrollView>
+</ContentPage>

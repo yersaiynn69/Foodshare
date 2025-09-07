@@ -1,29 +1,33 @@
-using Foodshare.Services;
+using System.Collections.ObjectModel;
 using Foodshare.Models;
+using Foodshare.Services;
 
-namespace Foodshare.Pages.Needy;
-
-public partial class NeedyBookingsPage : ContentPage
+namespace Foodshare.Pages.Needy
 {
-    readonly DbService _db;
-    public NeedyBookingsPage(){ InitializeComponent(); _db=Application.Current.Services.GetService<DbService>()!; }
-
-    protected override async void OnAppearing()
+    public partial class NeedyBookingsPage : ContentPage
     {
-        var me = Services.AuthService.CurrentUser!;
-        var bookings = await _db.Conn.Table<Booking>().Where(b=>b.BookerUserId==me.Id).ToListAsync();
-        var foods = await _db.Conn.Table<FoodItem>().ToListAsync();
-        var users = await _db.Conn.Table<User>().ToListAsync();
-        var items = from b in bookings
-                    join f in foods on b.FoodItemId equals f.Id
-                    join r in users on f.RestaurantUserId equals r.Id
-                    select new { Title = $"{f.Title} — {f.Kg:0.##} кг", Status = b.Status.ToString(), RestPhone = r.Phone };
-        List.ItemsSource = items.ToList();
-    }
+        public class Row { public string Title { get; set; } = ""; public string Detail { get; set; } = ""; }
+        private readonly ObservableCollection<Row> _items = new();
 
-    async void Call_Clicked(object s, EventArgs e)
-    {
-        var phone = (string)((Button)s).CommandParameter;
-        if(!string.IsNullOrWhiteSpace(phone)) await Launcher.OpenAsync($"tel:{phone}");
+        public NeedyBookingsPage() { InitializeComponent(); List.ItemsSource = _items; }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            _items.Clear();
+            var me = await AuthService.I.GetCurrentAsync();
+            if (me == null) return;
+            var bookings = await DbService.I.Conn.Table<Booking>().Where(x => x.BookerUserId == me.Id)
+                .OrderByDescending(x => x.CreatedAt).ToListAsync();
+            foreach (var b in bookings)
+            {
+                var food = await DbService.I.Conn.FindAsync<FoodItem>(b.FoodItemId);
+                _items.Add(new Row
+                {
+                    Title = food?.Title ?? "Заказ",
+                    Detail = $"{b.Kg} кг • Статус: {b.Status}"
+                });
+            }
+        }
     }
 }

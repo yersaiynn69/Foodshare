@@ -1,23 +1,23 @@
-using Foodshare.Models;
 using Foodshare.Services;
-using Foodshare.Pages.Volunteer;
 
-namespace Foodshare.Pages.Auth;
-
-public partial class RegisterVolunteerPage : ContentPage
+namespace Foodshare.Pages.Auth
 {
-    readonly AuthService _auth;
-    public RegisterVolunteerPage(){ InitializeComponent(); _auth = Application.Current.Services.GetService<AuthService>()!; }
-
-    async void Create_Clicked(object sender, EventArgs e)
+    public partial class RegisterVolunteerPage : ContentPage
     {
-        if (await _auth.EmailExists(Email.Text!)) { await DisplayAlert("Ошибка","Email уже существует","OK"); return; }
-        var u = new User{
-            FullName = FullName.Text?.Trim() ?? "", Phone = Phone.Text?.Trim() ?? "",
-            VehicleInfo = Vehicle.Text?.Trim() ?? "", Email = Email.Text?.Trim() ?? "",
-            Role = UserRole.Volunteer, City="Атырау"
-        };
-        await _auth.Register(u, Password.Text ?? "");
-        await Navigation.PushAsync(new VolunteerOrdersPage());
+        public RegisterVolunteerPage() { InitializeComponent(); SaveBtn.Clicked += OnSave; }
+
+        private async void OnSave(object? s, EventArgs e)
+        {
+            var ok = await AuthService.I.RegisterVolunteerAsync(
+                fullName: FullName.Text?.Trim() ?? "",
+                phone: Phone.Text?.Trim() ?? "",
+                email: Email.Text?.Trim() ?? "",
+                city: "Атырау",
+                transport: Transport.Text?.Trim() ?? "",
+                pass: Password.Text ?? ""
+            );
+            if (!ok) { await DisplayAlert("Ошибка", "Проверьте данные", "OK"); return; }
+            await Shell.Current.GoToAsync("//home");
+        }
     }
 }
